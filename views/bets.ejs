@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+  <%- include('./partials/head.ejs') %>
+<body onload="checkUnreadPMs(), promoteEditor()">
+  <%- include('./partials/header.ejs') %>
+  <%- include('./partials/nav.ejs') %>
+  <div class="content-container">
+    <div class="bet-container pb-2">
+        <h2 class="bet-container-header text-success">Recent Bets: <span class="text-warning" id="numBets"><%=bets.length%></span></h2>
+          <div class="bet-list-container">
+            <ul class="list-group mb-2">
+            <% if(loggedIn){ %>
+              <% if(bets.length > 0){ %>
+                <% bets.forEach(bet => { %>
+                  <li class="list-group-item d-flex justify-content-between align-items-start" id="<%=bet._id%>">
+                    <a class="remove" data-delete="/bets/<%= bet._id %>" onclick="removeBet(this)"><span class="badge bg-dark">remove</span></a>
+                    <div class="ms-3 me-auto">
+                      <div class="fw-bold"><%= bet.betOn %> @ 
+                        <% if(bet.odds > 0){ %>
+                          +<%= bet.odds %>
+                        <% }else{ %>
+                          <%= bet.odds %>
+                        <% } %>
+                      </div>
+                      <div class="fw-bold">Stake: $<%= bet.stake %></div>
+                      <div class="text-muted"><%= bet.team1 %> vs <%= bet.team2 %> </br><%= bet.dateOfGame.toISOString().split('T')[0] %></div>
+                    </div>
+                    <% if(bet.result == 'win'){ %>
+                      <span class="badge bg-success">
+                    <% } else if(bet.result == 'loss'){ %>
+                      <span class="badge bg-danger">
+                    <% } else{ %>
+                      <span class="badge bg-secondary">
+                    <% } %>
+                    <%= bet.result %></span>
+                  </li>
+                <% }) %>
+              <% } else { %>
+                <li class="empty-list">There are no recent bets...</li>
+              <% } %>
+            <% } else { %>
+              <li class="empty-list">Log in to create and view bets...</li>
+            <% } %>
+            </ul>
+          </div>
+    </div>
+    <%- include('./partials/bet-form.ejs') %>
+
+    <% if(bets.length >= 50 && bets.length % 10 == 0 && !editor){ %>
+      <form class="modal fade" method="POST" action="/bets/promote" id="editorPromoteModal" tabindex="-1" aria-labelledby="editorPromoteModal" aria-hidden="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header text-success bg-dark">
+                <h2 class="modal-title">Congratulations</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-dark text-light">
+              You have submitted <%=bets.length%> bets and can now promote to editor.
+            </div>
+            <div class="modal-footer bg-dark">
+                <button type="submit" class="btn btn-success">Accept</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </form>
+  <% } %>
+
+  <script>
+    var leaguesJSON = '<%- JSON.stringify(Leagues) %>';
+    var Leagues = JSON.parse(leaguesJSON);
+
+    function changeLeague(){
+      var selected_league = document.getElementById("selectLeague").value;
+      document.getElementById("selectTeam1").innerHTML = "";
+      document.getElementById("selectTeam2").innerHTML = "";
+
+      for(var i = 0; i < Leagues[selected_league].teams.length; i++){
+        if(i != 0) //Skip first element
+          document.getElementById("selectTeam2").innerHTML += '<option value="' + Leagues[selected_league].teams[i] + '">' + Leagues[selected_league].teams[i] + '</option>';
+        if(i != 1) //Skip 2nd element
+          document.getElementById("selectTeam1").innerHTML += '<option value="' + Leagues[selected_league].teams[i] + '">' + Leagues[selected_league].teams[i] + '</option>';
+      }
+      document.getElementById("betOnTeam").innerHTML = 
+        '<option value="' + Leagues[selected_league].teams[0] + '">' + Leagues[selected_league].teams[0] + '</option>' + 
+        '<option value="' + Leagues[selected_league].teams[1] + '">' + Leagues[selected_league].teams[1] + '</option>';
+    }
+
+    function changeTeams(select){
+      var selectedValue = select.value;
+
+      var otherTeamId;
+      if(select.id == "selectTeam1")
+        otherTeamId = document.getElementById("selectTeam2").id;
+      else
+        otherTeamId = document.getElementById("selectTeam1").id;
+
+      var otherTeamValue = document.getElementById(otherTeamId).value;
+      var selected_league = document.getElementById("selectLeague").value;
+      document.getElementById(otherTeamId).innerHTML = "";
+      Leagues[selected_league].teams.forEach(team => {
+        if(selectedValue != team)
+          document.getElementById(otherTeamId).innerHTML += '<option value="' + team + '">' + team + '</option>';
+      });
+
+      document.getElementById(otherTeamId).value = otherTeamValue;
+
+      document.getElementById("betOnTeam").innerHTML = '<option value="' + document.getElementById("selectTeam1").value + '">' + document.getElementById("selectTeam1").value + '</option>';
+      document.getElementById("betOnTeam").innerHTML += '<option value="' + document.getElementById("selectTeam2").value + '">' + document.getElementById("selectTeam2").value + '</option>';
+    }
+
+    function removeBet(a){
+      document.getElementById('numBets').innerHTML = Number(document.getElementById('numBets').innerHTML) - 1;
+      const url = a.dataset.delete;
+      fetch(url, { method: 'DELETE' });
+      document.getElementById(a.dataset.delete.replace('/bets/', '')).remove();
+    }
+
+    function promoteEditor(){
+      var modal = new bootstrap.Modal(document.getElementById('editorPromoteModal'));
+      modal.show();
+    }
+
+  </script>
+  <%- include('./partials/resend-fix.ejs') %>
+  <%- include('./partials/private-message.ejs')%>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<table class="table text-center text-light">
+    <thead class="fw-bold">
+      <tr>
+        <td>Bet</td>
+        <td>League</td>
+        <td>Game</td>
+        <td>Bet On</td>
+        <td>Odds</td>
+        <td>Bet Amount</td>
+        <td>Result</td>
+        <td>Win/Loss Amount</td>
+        <td>Date</td>
+      <tr>
+    </thead>
+    <tbody>
+          <% var count = 1; bets.forEach(bet => { %>
+            <tr>
+              <td><%=count++%></td>
+              <td><%=bet.league%></td>
+              <td><%=bet.team1%> vs <%=bet.team2%></td>
+              <td class="text-warning"><%=bet.betOn%></td>
+              <td><%=bet.odds%></td>
+              <td>$<%=bet.stake%></td>
+              <% if(bet.result == 'win'){ %>
+                <td class="win"><%=bet.result%></td>
+              <% }else if (bet.result == 'loss'){ %>
+                <td class="loss"><%=bet.result%></td>
+              <% }else{ %>
+                <td class="push"><%=bet.result%></td>
+              <% } %>
+              
+              <% if(bet.result == 'win'){ %>
+                <td class="win">$<%=bet.payout%></td>
+              <% }else if (bet.result == 'loss'){ %>
+                <td class="loss">-$<%=bet.payout*-1%></td>
+              <% }else{ %>
+                <td class="push">----</td>
+              <% } %>
+              <td><%=bet.dateOfGame.toISOString().split('T')[0]%></td>
+            </tr>
+          <% }); %>
+    </tbody>
+</table>

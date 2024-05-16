@@ -1,0 +1,7 @@
+<canvas id="doughnutChart" style="position: relative;" hidden></canvas>
+<script>
+    const DOUGNUT_CHART_JSON = '<%-JSON.stringify(charts.doughnut_chart)%>';
+    const DOUGNUT_CHART_OBJECT = JSON.parse(DOUGNUT_CHART_JSON);
+    var ctx = document.getElementById("doughnutChart");
+    var doughnutChart = new Chart(ctx, DOUGNUT_CHART_OBJECT);
+</script>

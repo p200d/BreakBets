@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <%- include('./partials/head.ejs') %>
+<body>
+    <div class="container signup-container">
+      <form class="row" action="/register" method="POST">
+        <a class="break-bets col-md-12 mt-2" href="/"><h1 class="text-success">BreakBets</h1></a>
+        <div class="col-md-12 px-2 pb-2">
+          <label for="username" class="form-label">Username: 
+            <% if(!error.username.valid){ %>
+              <span class="error"><%= error.username.message %></span>
+            <% } else if(!error.usernameExists.valid){ %>
+                <span class="error"><%= error.usernameExists.message %></span>
+            <% } %>
+          </label>
+          <input type="username" class="form-control" id="username" name="username" maxlength="16" placeholder="Enter username..." value="<%= form.username %>">
+        </div>
+        <div class="col-md-12 px-2 pb-2">
+          <label for="email" class="form-label">Email: 
+            <% if(!error.email.valid){ %>
+              <span class="error"><%=error.email.message%></span>
+            <% } %>
+          </label>
+          <input type="text" class="form-control" id="email" name="email" placeholder="Enter email address..." value="<%= form.email %>">
+        </div>
+        <div class="col-md-12 px-2 pb-2">
+          <label for="password" class="p-1 form-label">Password: 
+            <% if(!error.password.valid){ %>
+              <span class="error"><%=error.password.message%></span>
+            <% } %>
+          </label>
+          <input type="password" class="form-control" id="password" name="password" maxlength="20" placeholder="Enter password..." value="<%= form.password %>">
+        </div>
+        <div class="col-md-12 px-2 pb-2">
+          <label for="confirmPassword" class="form-label">Confirm Password: 
+            <% if(!error.confirmPassword.valid){ %>
+              <span class="error"><%=error.confirmPassword.message%></span>
+            <% } %>
+          </label>
+          <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" maxlength="20" placeholder="Confirm password..." value="<%= form.confirmPassword %>">
+        </div>
+        <div class="col-md-12 px-2 pb-2">
+          <button class="col-md-12 btn btn-success my-4 mb-2">Sign Up</button>
+          <a href="/login" class="col-md-12 btn btn-secondary">Log In</a>
+        </div>
+      </form>
+    </div>
+    <%- include('./partials/resend-fix.ejs') %>
+</body>
+</html>

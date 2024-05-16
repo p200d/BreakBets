@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <%- include('./partials/head.ejs') %>
+<body>
+  <div class="container signup-container">
+      <form action="/login" method="POST" class="row">
+        <a class="break-bets col-md-12 mt-2" href="/"><h1 class="text-success">BreakBets</h1></a>
+        <div class="col-md-12 px-2 pb-2">
+          <label for="username" class="form-label">Username: 
+            <% if(!error.valid){ %>
+              <span class="error"><%=error.message%></span>
+            <% } %>
+          </label>
+          <input type="username" class="form-control" id="username" name="username" maxlength="16" placeholder="Enter username..." value="">
+        </div>
+        <div class="col-md-12 px-2 pb-2">
+          <label for="password" class="form-label">Password: </label>
+          <input type="password" class="form-control" id="password" name="password" maxlength="16" placeholder="Enter password..." value="">
+        </div>
+        <div class="col-md-12 px-2 pb-2">
+          <button class="col-md-12 btn btn-secondary my-4 mb-2">Log in</button>
+          <a href="/register" class="col-md-12 btn btn-success">Sign Up</a>
+        </div>
+      </form>
+  </div>
+  <%- include('./partials/resend-fix.ejs') %>
+</body>
+</html>

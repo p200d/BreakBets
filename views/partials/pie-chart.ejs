@@ -1,0 +1,7 @@
+<canvas id="pieChart" style="position: relative;"></canvas>
+<script>
+    const PIE_CHART_JSON = '<%-JSON.stringify(charts.pie_chart)%>';
+    const PIE_CHART_OBJECT = JSON.parse(PIE_CHART_JSON);
+    var ctx = document.getElementById("pieChart");
+    var pieChart = new Chart(ctx, PIE_CHART_OBJECT);
+</script>

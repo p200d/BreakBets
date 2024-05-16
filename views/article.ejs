@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <%- include('./styles.ejs') %>
+        <title>BreakBets</title>
+    </head>
+<body onload='checkUnreadPMs()'>
+  <%- include('./partials/header.ejs') %>
+  <%- include('./partials/nav.ejs') %>
+
+  <div class="content-container">
+    <div class="news-container container">
+        <div class="article-container container border-bottom border-secondary mt-1 pt-3">
+            <% if(article.author == username){ %>
+                <div class="d-flex flex-row-reverse">
+                    <div>
+                        <i class="bi bi-trash"></i>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editArticle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                            </svg>
+                            Edit
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteArticle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            <% } %>
+            <div class="row"><h1 class="text-center text-success fw-bold"><%= article.title%></h1></div>
+            <div class="row fs-5">
+                <div class="col text-center">
+                    <span class="text-info mx-2">By: <%=article.author%></span><span class="text-secondary mx-2">Last updated: <%=article.updatedAt.toDateString()%></span>
+                </div>
+            </div>
+            <div class="row mt-2 text-light p-3">
+                    <p class="fs-5"><%=article.body%></p>
+            </div>
+            <div class="row">
+                <div class="col text-warning">
+                    <span class="fs-3"><%= article.numComments %> comments </span>
+                    <% if(!error.comment.valid){ %>
+                        <span class="fs-5 error">Comments must contain [3-128 characters other than only spaces]</span>
+                    <% } %>
+                </div>
+            </div>
+            <form method="POST" action="/news/comment/<%=article.id%>" class="row mb-2">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="comment" placeholder="Type a new comment to add here..." aria-describedby="button-comment" maxlength="128">
+                    <button class="btn btn-outline-success" type="submit" id="button-comment">Add Comment</button>
+                </div>
+            </form>
+            <% comments.forEach(comment => { %>
+            <div class="row text-end">
+                <div class="row text-success">
+                    <%if(comment.deleted){%>
+                        <div class="col text-start fw-bold text-secondary">[deleted]</div>
+                    <%}else{%>
+                        <div class="col text-start fw-bold <%if(comment.author == article.author){%>text-info<%}%>" id="commentAuthor<%=comment.id%>"><%=comment.author%>:</div>
+                    <% } %>
+                    <div class="col text-end text-secondary">
+                        <%if((username == comment.author || username == article.author) && !comment.deleted){ %>
+                        <a data-delete="/news/comment/delete/<%= comment._id %>" class="delete link-danger" id="commentDelete<%=comment._id%>" onclick="deleteComment(this); return false;">Delete</a>
+                        <%}%>
+                        <span>Posted: <%=comment.createdAt.toDateString()%></span>
+                    </div>
+                </div>
+                <div class="row text-start" id="commentMessage<%=comment.id%>">
+                    <%if(comment.deleted){%>
+                        <p class="lh-2 text-secondary">[deleted]</p>
+                    <%}else{%>
+                        <p class="lh-2 text-light"><%=comment.message%></p>
+                    <% } %>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <form class="modal" method="POST" action="/news/edit/<%=article.id%>" id="editArticle" tabindex="-1" aria-labelledby="editArticleLabel" aria-hidden="false">
+        <div class="modal-dialog">
+            <div class="modal-content add-news-content">
+            <div class="modal-header text-success">
+                <h2 class="modal-title" id="editArticleLabel">Edit Article</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="hideEditError()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <span class="text-success">Title: </span><span class="text-light"><%=article.title%></span>
+                </div>
+                <div class="mb-3">
+                    <label for="article-body" class="col-form-label text-success">Body: 
+                        <% if(!error.body.valid){ %><span id="editError" class="error">Body must contain [3-2000 characters other than only spaces]</span><% } %>
+                    </label>
+                    <textarea class="form-control" id="article-body" name="body" maxlength="2000"><%=article.body%></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Apply</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="hideEditError()">Close</button>
+            </div>
+            </div>
+        </div>
+    </form>
+
+    <form class="modal fade" method="POST" action="/news/delete/<%=article.id%>" id="deleteArticle" tabindex="-1" aria-labelledby="deleteArticleLabel" aria-hidden="false">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <span class="text-light fw-bold">Are you sure you want to delete this article?</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+            </div>
+        </div>
+    </form>
+  </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script>
+        var errorJSON = '<%- JSON.stringify(error.hidden) %>';
+        var hidden = JSON.parse(errorJSON);
+        if(!hidden){
+            var modal = new bootstrap.Modal(document.getElementById('editArticle'));
+            modal.show();
+        }
+
+        function hideEditError(){
+            document.getElementById('editError').hidden = true;
+        }
+
+        function deleteComment(a){
+            const url = a.dataset.delete;
+            const id = a.dataset.delete.replace('/news/comment/delete/', '');
+            fetch(url, { method: 'DELETE' })
+            document.getElementById(`commentAuthor${id}`).innerHTML = '<div class="col text-start fw-bold text-secondary">[deleted]</div>';
+            document.getElementById(`commentDelete${id}`).remove();
+            document.getElementById(`commentMessage${id}`).innerHTML = '<p class="lh-2 text-secondary">[deleted]</p>';
+        }
+    </script>
+    <%- include('./partials/private-message.ejs')%>
+    <%- include('./partials/resend-fix.ejs') %>
+</body>
+</html>

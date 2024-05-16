@@ -1,0 +1,26 @@
+<div class="row">
+    <div class="col">
+      <table class="table table-sm table-borderless text-light">
+        <tr><td>Win: </td><td class="win"><%=stats.win_percent%>%</td></tr>
+        <tr><td>Loss: </td><td class="loss"><%=stats.loss_percent%>%</td></tr>
+        <tr><td>Push: </td><td class="push"><%=stats.push_percent%>%</td></tr>
+        <tr><td>Net gain:</td>
+            <% if(stats.net_gain > 0){ %>
+                <td class="win">$<%=stats.net_gain%></td>
+            <% }else if(stats.net_gain < 0){ %>
+                <td class="loss">-$<%=stats.net_gain*-1%></td></tr>
+            <% }else{ %>
+                <td class="push">$<%=stats.net_gain%></td></tr>
+            <% } %>
+        </tr>
+        <tr><td>Avg payout:</td>
+            <% if(stats.average_payout > 0){ %>
+                <td class="win">$<%=stats.average_payout%></td>
+            <% }else if(stats.average_payout < 0){ %>
+                <td class="loss">-$<%=stats.average_payout*-1%></td></tr>
+            <% }else{ %>
+                <td class="push">$<%=stats.average_payout%></td></tr>
+            <% } %>
+      </table>
+    </div>
+</div>

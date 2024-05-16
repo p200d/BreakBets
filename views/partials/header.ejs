@@ -1,0 +1,22 @@
+<div class="header-nav-container text-light" id="header-nav-container">
+  <span class="nav-header-title"><a href="/" class="text-success">BreakBets</a></span>
+    <% if(username){ %>
+      <div class="header-nav-item">
+        <a href="/logout">
+          <span class="material-icons text-success">logout</span>
+          <span>Sign Out</span>
+        </a>
+      </div>
+      <div class="header-nav-item"><a href="/profile">
+        <% if(editor) { %>
+          <span class="material-icons text-warning">star_outline</span>
+        <% }else{ %>
+          <span class="material-icons text-success">perm_identity</span>
+        <% } %>
+          <span class="text-uppercase"><%= username%></span></a></div>
+    <% }else{ %>
+      <a href="/register" class="btn btn-success header-nav-button">Sign Up</a>
+      <a href="/login" class="btn btn-secondary header-nav-button">Log In</a>
+    <% } %>
+</div>
+

@@ -1,0 +1,172 @@
+<div class="modal fade" id="pm-modal" tabindex="-1" aria-labelledby="pmLabel" aria-hidden="false">
+    <div class="modal-dialog">
+        <div class="modal-content pm-modal">
+            <div class="modal-header text-success">
+                <h2 class="modal-title text-center" id="pmLabel">Private Messages</h5>
+            </div>
+            <div class="modal-body">
+                <div id="pm-search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" maxlength="16" value=""
+                        placeholder="Type username to message..." aria-describedby="button-username" id="pm_username">
+                        <button class="btn btn-outline-success" type="submit" id="button-username" onclick="userExists()">Search Username</button>
+                    </div>
+                </div>
+                <span class="text-success fw-bold" id="pm_history">Message History: </span>
+                <div class="pm-message-container border p-1 text-light" id="pm-message-container">
+                </div>
+            </div>
+            <div class="modal-footer" id="pm-send">
+                <div class="input-group align-self-end">
+                    <input type="text" class="form-control" placeholder="Send a private message..." id="private_message" maxlength="128" aria-describedby="button-message" disabled>
+                    <button class="btn btn-outline-success" type="button" id="send_pm_button" disabled onclick="sendPM()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const LOGIN_USER = '<%-username%>';
+    const IS_EDITOR = '<%-editor%>'
+    var SEND_TO = '';
+    var VALID_RECIPIENT = false;
+
+    function openPM(){
+        SEND_TO = '';
+        VALID_RECIPIENT = false;
+        document.getElementById('pm-search').style.display = 'block';
+        document.getElementById('pm-send').style.display = 'block';
+        updateHistory();
+        clearSend();
+        document.getElementById('pm_username').style.border = "none";
+        document.getElementById('pm_username').value = '';
+        document.getElementById('button-username').className = 'btn btn-outline-success';
+        document.getElementById('private_message').disabled = true;
+        document.getElementById('send_pm_button').disabled = true;
+        document.getElementById('pm-message-container').innerHTML = '';
+    }
+
+    function userExists(){
+        const username = document.getElementById('pm_username').value;
+        const url = `/friends/user/${username}`;
+        if(username.length > 0 && username != LOGIN_USER){
+            fetch(url, { method: 'GET' })
+            .then(response => response.json())
+            .then(data => exists = data.exists)
+            .then(() => {
+                if(!exists){
+                    invalidUser();
+                }
+                else{
+                    SEND_TO = username;
+                    validUser();
+                    loadPMs(username);
+                }
+            })
+        }
+        else{
+            invalidUser();
+        }
+    }
+
+    function loadPMs(username){
+        const url = `/friends/messages/${username}`
+        fetch(url, { method: 'GET' })
+        .then(response => response.json())
+        .then(data => conversation = data)
+        .then(() => {
+            var message_html = "";
+            if(conversation[0] != undefined){
+                if(conversation[0].messages.length > 0){
+                    conversation[0].messages.forEach(message => {
+                        if(message.sender == LOGIN_USER)
+                            message_html += `<p><span class="text-success fw-bold">${message.sender}</span>: ${message.body}</p>`;
+                        else
+                            message_html += `<p><span class="fw-bold">${message.sender}</span>: ${message.body}</p>`
+                    });
+                }
+            }
+            document.getElementById('pm-message-container').innerHTML = message_html;
+            document.getElementById('pm-message-container').scrollTop = document.getElementById('pm-message-container').scrollHeight;
+        })
+    }
+
+    function sendPM(){
+        message = document.getElementById('private_message').value;
+        clearSend();
+        if(message.length > 0 && message.length <= 128){
+            if(VALID_RECIPIENT && SEND_TO != ''){
+                const url = `/friends/messages/${SEND_TO}/${message}`;
+                fetch(url, { method: 'POST' })
+                .then(() => { 
+                    loadPMs(SEND_TO);
+                });
+                fetch(`/friends/addUnread/${SEND_TO}/`, { method: 'POST' });
+            }
+        }
+    }
+
+    function invalidUser(){
+        VALID_RECIPIENT = false;
+        SEND_TO = '';
+        updateHistory();
+        clearSend();
+        document.getElementById('pm_username').style.border = "2px solid red";
+        document.getElementById('button-username').classList.replace('btn-outline-success', 'btn-outline-danger');
+        document.getElementById('private_message').disabled = true;
+        document.getElementById('send_pm_button').disabled = true;
+        document.getElementById('pm-message-container').innerHTML = '';
+    }
+
+    function validUser(){
+        VALID_RECIPIENT = true;
+        updateHistory();
+        document.getElementById('pm_username').style.border = "2px solid green";
+        document.getElementById('button-username').classList.replace('btn-outline-danger', 'btn-outline-success');
+        document.getElementById('private_message').disabled = false;
+        document.getElementById('send_pm_button').disabled = false;
+    }
+
+    function updateHistory(){
+        document.getElementById('pm_history').innerHTML = `Message History: ${SEND_TO}`;
+    }
+
+    function clearSend(){
+        document.getElementById('private_message').value = '';
+    }
+
+    function checkUnreadPMs(){
+        if(LOGIN_USER != ''){
+            fetch('/friends/unreadPMs/', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => unread = data)
+            .then(() => {
+                if(unread.length > 0){
+                    unread.forEach(sender => {
+                        document.getElementById('header-nav-container').innerHTML += `
+                        <div class="header-nav-item" id="%pm_${sender}">
+                            <a href="#" onclick="openReceivedPM(this.dataset.username); return this;" data-username="${sender}" data-bs-toggle="modal" data-bs-target="#pm-modal">
+                            <span class="material-icons text-warning">mode_comment</span><span>${sender}</span></a>
+                        </div>`
+                    })
+                }
+            })
+        }
+    }
+
+    function markRead(username){
+        url = `/friends/markRead/${username}/`;
+        fetch(url, { method: 'PUT' });
+    }
+
+    function openReceivedPM(username){
+        document.getElementById('pm-search').style.display = 'none';
+        document.getElementById('pm-send').style.display = 'none';
+        document.getElementById('pm_history').innerHTML = `Message History: ${username}`
+        document.getElementById(`%pm_${username}`).remove();
+        loadPMs(username);
+        markRead(username);
+    }
+
+</script>

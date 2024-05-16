@@ -1,0 +1,134 @@
+<div class="bet-form-container">
+  <h2 class="bet-container-header text-success">Add a New Bet</h2>
+  <div class="container">
+    <form class="row" action="/bets" method="POST">
+
+      <div class="col-md-12 mt-1 mb-1">
+        <div class="input-group">
+          <label class="input-group-text" for="selectLeague">League</label>
+          <select name="league" class="form-select" id="selectLeague" onchange="changeLeague()">
+            <% for(let league in Leagues){ %>
+              <option value="<%= league %>" 
+                <% if(league == form.league){ %>
+                  selected
+                <% } %>
+                ><%= league %></option>
+            <% } %>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-md-12 my-2">
+        <div class="input-group">
+          <label class="input-group-text" for="selectTeam1">Team 1</label>
+          <select name="team1" class="form-select" id="selectTeam1" onchange="changeTeams(this)">
+            <% for(var i = 0; i < Leagues[form.league].teams.length; i++){ %>
+              <% if(i != 1){ //Skip second option %>
+                <option value="<%= Leagues[form.league].teams[i] %>"
+                  <% if(Leagues[form.league].teams[i] == form.team1){ %>
+                    selected
+                  <% } %>
+                ><%= Leagues[form.league].teams[i] %>
+              <% } %>
+            <% } %>
+          </select>
+          <label class="input-group-text" for="selectTeam2">Team 2</label>
+          <select name="team2" class="form-select" id="selectTeam2" onchange="changeTeams(this)">
+            <% var loopedOnce = false; %>
+            <% Leagues[form.league].teams.forEach(team => { %>
+                <% if(loopedOnce){ %>
+                    <option value="<%= team %>"
+                      <% if(team == form.team2){ %>
+                        selected
+                      <% } %>
+                    ><%= team %>
+                <% } %>
+                <% loopedOnce = true; %>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-md-12 my-2">
+        <div class="input-group">
+          <label class="input-group-text" for="betOnTeam">Bet on team</label>
+          <select name="betOn" class="form-select" id="betOnTeam">
+            <option value="<%= form.team1 %>"
+              <% if(form.team1 == form.betOn){ %>
+                  selected
+              <% } %>
+            ><%= form.team1 %>
+            <option value="<%= form.team2 %>"
+              <% if(form.team2 == form.betOn){ %>
+                  selected
+              <% } %>
+            ><%= form.team2 %>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-md-6 my-2">
+        <div class="input-group">
+          <span class="input-group-text">$</span>
+          <input name="stake" type="text" class="form-control" placeholder="Enter stake..." aria-label="" value="<%= form.stake %>">
+        </div>
+      </div>
+      <div class="col-md-6 my-2 pt-2 error ">
+        <% if(!error.stake.valid){ %>
+          <%= error.stake.message %>
+        <% } %>
+      </div>
+
+      <div class="col-md-6 my-2">
+        <div class="input-group">
+          <span class="input-group-text">Odds</span>
+          <input name="odds" type="text" class="form-control" placeholder="Enter odds... (e.g -150)" aria-label="" value="<%= form.odds %>">
+        </div>
+      </div>
+      <div class="col-md-6 my-2 pt-2 error">
+        <% if(!error.odds.valid){ %>
+          <%= error.odds.message %>
+        <% } %>
+      </div>
+
+      <div class="col-md-6 my-2">
+        <label for="start" class="text-light">Game date:</label>
+        <input type="date" id="dateOfGame" name="dateOfGame" min="" max="" 
+          value="<%= form.dateOfGame %>"
+        >
+      </div>
+      <div class="col-md-6 my-2 pt-2 error">
+        <% if(!error.date.valid){ %>
+          <%= error.date.message %>
+        <% } %>
+      </div>
+
+      <div class="col-md-6 my-2 text-light">
+        <span class="">Result:</span>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="result" id="resultRadioWin" value="win" checked>
+          <label class="form-check-label" for="resultRadioWin">
+            Win
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="result" id="resultRadioLoss" value="loss">
+          <label class="form-check-label" for="resultRadioLoss">
+            Loss
+          </label>
+        </div>
+        <div class="form-check col-md-3">
+          <input class="form-check-input" type="radio" name="result" id="resultRadioPush" value="push">
+          <label class="form-check-label" for="resultRadioPush">
+            Push
+          </label>
+        </div>
+      </div>
+
+      <div class="col-md-12 mb-1">
+        <button type="submit" class="profile-button register-button text-light btn-block w-100 mt-2">Add Bet</button>
+      </div>
+
+    </form>
+  </div>
+</div>
